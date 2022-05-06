@@ -1,0 +1,1 @@
+-- Notes for quickchecking in haskell 06.05.22

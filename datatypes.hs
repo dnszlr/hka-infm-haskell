@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances #-}
 -- Haskell Part 2: Data Types und User-Controlled Overloading
 data WeekDay = Mo | Tue | Wed | Thur | Fri | Sat | Sun
 
@@ -94,3 +95,16 @@ instance Eq WeekDay where
 
 -- Funktioniert jetzt mit der ursprünglichen member Funktion, da (==) nun korrekt für Wochentage angewendet wird.
 testMember3 = member Mo (Cons Mo(Cons Fri(Cons Sun Null)))
+
+
+-- Equals für eine Liste an Wochentagen
+instance Eq (List WeekDay) where
+    (==) Null Null = True 
+    (==) (Cons _ _) Null = False 
+    (==) Null (Cons _ _) = False
+    -- x == y Gleichheit für Wochentage, xs == ys rekursiver Aufruf für Gleichheit für Wochentaglisten
+    (==) (Cons x xs) (Cons y ys) = x == y && xs == ys
+
+
+-- Question: What is the difference between data and type
+
