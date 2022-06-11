@@ -1,8 +1,10 @@
-{-# OPTIONS_GHC -Wno-overlapping-patterns #-}
 import Data.IORef
-import GhcPlugins (xFlags)
-import GHC.Read (list)
 import Data.List (sortBy)
+import DynFlags (xFlags, rESERVED_C_STACK_BYTES)
+import Data.Time.Format.ISO8601 (yearFormat)
+import Test.QuickCheck
+import System.Random
+import Data.Char
 -- Datei zusätzlich zur Prüfungsvorbereitung Sommersemester 2022 - Dennis Zeller
 -- Kapitel 1: Haskell: A quick tour
 
@@ -28,7 +30,7 @@ example x y = x + y
 example2 :: (Int -> Int) -> Int -> Int
 example2 func1 value = func1 value + 12
 square :: Int -> Int
-square x = x * 2
+square x = x ^ 2
 
 -- Pure function
 initValue :: Int -> Int
@@ -497,7 +499,7 @@ rmDups' acc (x:xs)
 
 -- Kapitel 3: Data Types und User-Controlled Overloading
 
-data Weekday = Mon | Tue | Wed | Thu | Fri | Sat | Sun 
+data Weekday = Mon | Tue | Wed | Thu | Fri | Sat | Sun
 
 printWD :: Weekday -> String 
 printWD Mon = "Monday"
@@ -512,11 +514,11 @@ printWD Sun = "Sunday"
 data Result = OK Int | Failure String deriving (Show, Eq, Ord)
 
 divZero a b
-    | b == 0 = Failure "Div by Zero"
+    | b == 0 = Main.Failure "Div by Zero"
     | otherwise = OK (a `div` b)
 
 
-data Maybe a = CJust a | CNothing deriving (Show, Eq, Ord)
+data CMaybe a = CJust a | CNothing deriving (Show, Eq, Ord)
 
 divZeroMaybe a b =
     if b == 0 then CNothing
@@ -529,4 +531,269 @@ bigger a b
     | a >= b = CRight (a)
 
 -- Datenstrukturen
+data List value = Null | Cons value (List value) deriving(Show)
+-- Cons 1 (Cons 2 (Cons 3 (Cons 4 (Null))))
 
+data Tree value = Leaf value | Node (Tree value) (Tree value) deriving(Show)
+-- Tree mit einer Ebene
+-- Node (Node (Leaf 1) (Leaf 2)) (Node (Leaf 3) (Leaf 4))
+-- Tree mit zwei Ebenen
+-- Node (Node (Node (Leaf 1) (Leaf 2)) (Node (Leaf 3) (Leaf 4))) (Node (Node (Leaf 5) (Leaf 6)) (Node (Leaf 7) (Leaf 8)))
+
+
+-- Pattern maching and case
+-- Pattern Matching
+sumUpList Null = 0
+sumUpList (Cons x xs) = x + sumUpList xs
+
+-- Case
+sumUpListCase list = case list of
+    Null -> 0
+    (Cons x xs) -> x + sumUpListCase xs
+
+
+-- Überladen
+
+instance Eq Weekday where
+   (==) = eqWD
+
+
+instance Ord Weekday where
+    (<) w1 w2 = wdToInt w1 < wdToInt w2
+    (<=) w1 w2 = wdToInt w1 <= wdToInt w2
+    (>) w1 w2 = wdToInt w1 > wdToInt w2
+    (>=) w1 w2 = wdToInt w1 >= wdToInt w2
+
+
+instance Show Weekday where
+    show Mon = "Monday"
+    show Tue = "Tuesday"
+    show Wed = "Wednesday"
+    show Thu = "Thursday"
+    show Fri = "Friday"
+    show Sat = "Saturday"
+    show Sun = "Sunday"
+
+eqWD :: Weekday -> Weekday -> Bool 
+eqWD Mon Mon = True
+eqWD Tue Tue = True
+eqWD Wed Wed = True
+eqWD Thu Thu = True
+eqWD Fri Fri = True
+eqWD Sat Sat = True
+eqWD Sun Sun = True
+eqWD _ _ = False
+
+instance Num Weekday where
+    (+)  = addWd
+    
+addWd wd1 wd2 = let amount = wdToInt wd1 + wdToInt wd2
+                    maxAmount = wdToInt Sun
+                in 
+                    if amount > maxAmount then
+                        getWeekday (amount - maxAmount)
+                    else
+                        getWeekday amount
+
+wdToInt Mon = 1
+wdToInt Tue = 2
+wdToInt Wed = 3
+wdToInt Thu = 4
+wdToInt Fri = 5
+wdToInt Sat = 6
+wdToInt Sun = 7
+                        
+getWeekday 1 = Mon
+getWeekday 2 = Tue
+getWeekday 3 = Wed
+getWeekday 4 = Thu
+getWeekday 5 = Fri
+getWeekday 6 = Sat
+getWeekday 7 = Sun
+
+data Bogus = MkBogus Int Int deriving Eq
+bogus :: Bogus -> Int
+bogus (MkBogus x y)
+   | x == y   = x + y
+   | x > y = x
+   | otherwise = y
+
+
+
+-- Klassen
+class Basic value where
+    equalB :: value -> value -> Bool 
+    swapB :: value -> value
+
+data Dual = Alpha Int | Omega Int deriving Show
+
+instance Basic Dual where
+    equalB (Alpha 1) (Omega 0) = True 
+    equalB (Omega 1) (Alpha 0) = True 
+    equalB _ _ = False
+
+    swapB (Alpha 0) = Omega 1
+    swapB (Alpha 1) = Omega 0
+    swapB (Omega 0) = Alpha 1
+    swapB (Omega 1) = Alpha 0
+
+
+
+paperLet value = let square = value * value
+                in if square > 100 then
+                     square / 2
+                else square * 2    
+
+
+paperWhere value = 
+    if square > 100 then 
+        square / 2
+    else square * 2
+    where square = value * value
+
+
+paperGetNames = map (\(name,_,_) -> name)
+
+paperGetterName (name,_,_) = name
+
+paperGetName = \(name,_,_) -> name
+
+
+-- Computerphile Aufgabe
+
+data Expr = Val Int | Div Expr Expr deriving Show
+
+eval :: Expr -> Maybe Int
+eval (Val a) = return a
+eval (Div x y) = do n <- eval x
+                    m <- eval y
+                    safeDiv n m
+
+safeDiv :: Int -> Int -> Maybe Int
+safeDiv x y 
+    | y == 0 = Nothing 
+    | otherwise = Just (x `div` y)
+
+evalReturn :: Expr -> Maybe Int
+evalReturn (Val a) = return a
+
+
+-- Pure vs Impure
+
+fooPure :: Int -> Int
+fooPure x = x + 1
+
+fooImpure :: Int -> IO Int
+fooImpure x = do print x
+                 return (x + 1)
+
+impureExecute :: Int -> IO Int
+impureExecute x = do x1 <- fooImpure x
+                     x2 <- fooImpure (x ^ 2)
+                     return (x1 + x2)
+
+impureLet x = do x <- fooImpure x
+                 let y = x ^ 2
+                 return y
+
+impureWhere x = do x <- fooImpure x
+                   return y
+                   where y = x ^ 2
+
+incImp :: IORef Int -> IO Int
+incImp x = do y <- readIORef x
+              writeIORef x (y + 2)
+              return (y + 1)
+               
+run = do r <- newIORef 10
+         x <- incImp r
+         y <- readIORef r
+         print y
+         print x
+
+-- Eigene Imperative Programmierung
+
+runCustom = do r <- newIORef 4
+               squareRef r
+               output <- readIORef r
+               print output
+
+squareRef x = do y <- readIORef x
+                 writeIORef x (y * y)
+
+customRun x = do y <- newIORef x
+                 refSquare y
+                 output <- readIORef y
+                 print output
+
+refSquare x = do y <- readIORef x
+                 writeIORef x (y * y)
+
+
+-- Kapitel 5 QuickCheck
+-- | Counting words.
+-- Word = Sequence of characters not separated by white spaces (blanks).
+count :: String -> Int
+count [] = 0
+count (c:cs)
+  | c == ' ' = count $ skipBlanks cs
+  | otherwise = 1 + count (skipWord cs)
+
+-- | Generic skip function.
+skip :: (Char -> Bool) -> String -> String
+skip p [] = []
+skip p (c:cs)
+ | p c       = skip p cs
+ | otherwise = c:cs
+
+skipWord   = skip (/= ' ')
+skipBlanks = skip (== ' ')
+
+------------------------------------------------
+
+-- Custom Count Word
+countC :: String -> Int
+countC [] = 0
+countC [x] = if x == ' ' then 0 else 1
+countC (x:xs)
+    | x == ' ' = countC xs
+    | head xs == ' ' = 1 + countC xs
+    | otherwise = countC xs
+
+
+
+testCase expected func = func == expected
+
+class CArbitrary a where
+   arbitrary :: IO a
+
+-- | Choose one of the elements.
+elements :: [a] -> IO a
+elements xs = do i <- randomIO :: IO Int
+                 return (xs !! (i `mod` (length xs)))
+
+-- | Generate a fixed number of arbitrary values.
+vector ::  CArbitrary a => Int -> IO [a]
+vector 0 = return []
+vector n
+    | n > 0  = do x <- Main.arbitrary
+                  xs <- Main.vector (n-1)
+                  return (x:xs)
+    | otherwise = error "impossible"   
+
+instance CArbitrary Char where 
+   arbitrary = do x <- Main.elements [0..255]
+                  return (chr x)
+
+instance CArbitrary a => CArbitrary [a] where
+   arbitrary = Main.vector 5
+
+genStrings :: IO ()
+genStrings = do xs <- Main.arbitrary
+                putStrLn xs      
+
+
+
+getN (names,_,_) = names                 
+getNL = \(name,_,_) -> name
+getNs = map (\(names,_,_) -> names)
