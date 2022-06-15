@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+{-# OPTIONS_GHC -Wno-missing-methods #-}
 import Data.IORef
 import Data.List (sortBy)
 import DynFlags (xFlags, rESERVED_C_STACK_BYTES)
@@ -199,6 +201,7 @@ sumUp2 list
     | otherwise = head list + sumUp2 (tail list)
 
 
+bottom [] = 0
 bottom [x] = x
 bottom (x:xs) = bottom xs
 
