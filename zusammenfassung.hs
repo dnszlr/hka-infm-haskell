@@ -797,3 +797,13 @@ genStrings = do xs <- Main.arbitrary
 getN (names,_,_) = names                 
 getNL = \(name,_,_) -> name
 getNs = map (\(names,_,_) -> names)
+
+-- Property-based
+
+-- | Number of words counted must be greater or equal zero.
+prop1 :: String -> Bool
+prop1 s = count s >= 0
+
+-- | Reversing the string yields the same number of words.
+prop2 :: String -> Bool
+prop2 s = count s == count (reverse s)
