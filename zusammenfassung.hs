@@ -1,8 +1,6 @@
-{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
-{-# OPTIONS_GHC -Wno-missing-methods #-}
 import Data.IORef
 import Data.List (sortBy)
-import DynFlags (xFlags, rESERVED_C_STACK_BYTES)
+import DynFlags (xFlags, rESERVED_C_STACK_BYTES, xopt_set)
 import Data.Time.Format.ISO8601 (yearFormat)
 import Test.QuickCheck
 import System.Random
@@ -265,6 +263,9 @@ comprehensionSquareIfEven xs = [x ^ 2 | x <- xs, x `mod` 2 == 0]
 
 flatten2 xss = [x | xs <- xss, x <- xs]
 
+
+
+-- foldr & foldl
 
 -- foldr f z []     = z
 -- foldr f z (x:xs) = f x (foldr f z xs)
@@ -810,3 +811,30 @@ prop1 s = count s >= 0
 -- | Reversing the string yields the same number of words.
 prop2 :: String -> Bool
 prop2 s = count s == count (reverse s)
+
+tail2 [x] = x
+tail2 (x:xs) = tail2 xs
+
+
+sum2 [] = 0
+sum2 [x] = x
+sum2(x:xs) = x + sum2 xs
+
+sumWO xs = if null xs then
+           0
+           else
+           head xs + sumWO (tail xs)
+
+
+getNamers = map (\(name,_,_) -> name)
+
+
+getName = \(name,_,_) -> name
+
+
+ffA xs = [x | x <- xs, not x]
+
+
+getNamess = map (\(name,_,_) -> name)
+
+
