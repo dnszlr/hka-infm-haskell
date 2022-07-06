@@ -1,5 +1,6 @@
 import Data.Time.Format.ISO8601 (yearFormat)
 import Data.IORef
+import DynFlags (xFlags)
 myHead [x] = x
 myHead(x:xs) = x
 
@@ -146,14 +147,6 @@ getByte (_,byte) = byte
 
 
 
-run x = do y <- newIORef x
-           square y
-           x <- readIORef y
-           print x
-
-square x = do y <- readIORef x
-              writeIORef x (y * y)
-
 headOwn :: [x] -> x
 headOwn [x] = x
 headOwn (x:xs) = x
@@ -179,11 +172,49 @@ summit (Cons a b) = a + summit b
 
 class Type value where
     adds :: value -> value -> value
+    addss :: value -> value -> value
 
 data OK = Oki Int | Oko Int deriving Show
 
 instance Type OK where
     adds (Oki 1) (Oki 2) = (Oko 3)
+    addss (Oki a) (Oki b) = Oko (a + b)
 
 
-myElement (x + y) = z
+
+data Weekend = Saturday | Sunday
+
+instance Show Weekend where
+    show = showWeekend
+
+instance Num Weekend where
+    (+) = addWeekend
+
+
+showWeekend :: Weekend -> String
+showWeekend Saturday = "Samstag"
+showWeekend Sunday = "Sonntag"
+
+
+addWeekend Saturday Saturday = Sunday
+addWeekend Sunday Sunday = Saturday
+
+
+
+run :: Int -> IO ()
+run x = do y <- newIORef x
+           output <- square y
+           -- square y
+           --output <- readIORef y
+           print output
+
+square x = do y <- readIORef x
+              return (y * y)
+              --writeIORef x (y * y)
+
+
+nuull (x:xs) = False
+nuull [] = True
+
+
+test list = map(\x -> x) (filter (\y -> y /= 1) list)

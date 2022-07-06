@@ -426,7 +426,7 @@ Given a database, sort the database (in non-decreasing order)
 according to the name of students.
 -}
 sortDB :: DB -> DB
-sortDB db = sortBy (\(s1, _, _) -> \(s2, _, _) -> 
+sortDB db = sortBy (\(s1, _, _) -> \(s2, _, _) ->
                     if s1 == s2 then EQ
                     else if s1 < s2 then LT
                     else GT) db
@@ -443,8 +443,8 @@ sortDBByAmountOfCourse db = sortBy(\(_,_,courses1) -> \(_,_,courses2) ->
                             let lc1 = length courses1
                                 lc2 = length courses2
                             in
-                            if lc1 == lc2 then EQ 
-                            else if lc1 < lc2 then LT 
+                            if lc1 == lc2 then EQ
+                            else if lc1 < lc2 then LT
                             else GT) db
 {-
 Extension2:
@@ -479,7 +479,7 @@ mergeDB1 = [("Jane", 112, [141, 353])]
 mergeDB2 :: DB
 mergeDB2 = [("Jane", 112, [141, 252])]
 mergeDB3 :: DB
-mergeDB3 = [("Jane", 112, [141, 353])] 
+mergeDB3 = [("Jane", 112, [141, 353])]
 mergeDB4 :: DB
 mergeDB4 =[("Jane", 113, [141, 252])]
 
@@ -505,7 +505,7 @@ rmDups' acc (x:xs)
 
 data Weekday = Mon | Tue | Wed | Thu | Fri | Sat | Sun
 
-printWD :: Weekday -> String 
+printWD :: Weekday -> String
 printWD Mon = "Monday"
 printWD Tue = "Tuesday"
 printWD Wed = "Wednesday"
@@ -530,7 +530,7 @@ divZeroMaybe a b =
 
 data Either a b = CLeft a | CRight b deriving (Show, Eq, Ord)
 
-bigger a b 
+bigger a b
     | a < b = CLeft (b)
     | a >= b = CRight (a)
 
@@ -578,7 +578,7 @@ instance Show Weekday where
     show Sat = "Saturday"
     show Sun = "Sunday"
 
-eqWD :: Weekday -> Weekday -> Bool 
+eqWD :: Weekday -> Weekday -> Bool
 eqWD Mon Mon = True
 eqWD Tue Tue = True
 eqWD Wed Wed = True
@@ -590,10 +590,10 @@ eqWD _ _ = False
 
 instance Num Weekday where
     (+)  = addWd
-    
+
 addWd wd1 wd2 = let amount = wdToInt wd1 + wdToInt wd2
                     maxAmount = wdToInt Sun
-                in 
+                in
                     if amount > maxAmount then
                         getWeekday (amount - maxAmount)
                     else
@@ -606,7 +606,7 @@ wdToInt Thu = 4
 wdToInt Fri = 5
 wdToInt Sat = 6
 wdToInt Sun = 7
-                        
+
 getWeekday 1 = Mon
 getWeekday 2 = Tue
 getWeekday 3 = Wed
@@ -626,14 +626,14 @@ bogus (MkBogus x y)
 
 -- Klassen
 class Basic value where
-    equalB :: value -> value -> Bool 
+    equalB :: value -> value -> Bool
     swapB :: value -> value
 
 data Dual = Alpha Int | Omega Int deriving Show
 
 instance Basic Dual where
-    equalB (Alpha 1) (Omega 0) = True 
-    equalB (Omega 1) (Alpha 0) = True 
+    equalB (Alpha 1) (Omega 0) = True
+    equalB (Omega 1) (Alpha 0) = True
     equalB _ _ = False
 
     swapB (Alpha 0) = Omega 1
@@ -646,11 +646,11 @@ instance Basic Dual where
 paperLet value = let square = value * value
                 in if square > 100 then
                      square / 2
-                else square * 2    
+                else square * 2
 
 
-paperWhere value = 
-    if square > 100 then 
+paperWhere value =
+    if square > 100 then
         square / 2
     else square * 2
     where square = value * value
@@ -673,9 +673,10 @@ eval (Div x y) = do n <- eval x
                     m <- eval y
                     safeDiv n m
 
+
 safeDiv :: Int -> Int -> Maybe Int
-safeDiv x y 
-    | y == 0 = Nothing 
+safeDiv x y
+    | y == 0 = Nothing
     | otherwise = Just (x `div` y)
 
 evalReturn :: Expr -> Maybe Int
@@ -708,7 +709,7 @@ incImp :: IORef Int -> IO Int
 incImp x = do y <- readIORef x
               writeIORef x (y + 2)
               return (y + 1)
-               
+
 run = do r <- newIORef 10
          x <- incImp r
          y <- readIORef r
@@ -783,9 +784,9 @@ vector n
     | n > 0  = do x <- Main.arbitrary
                   xs <- Main.vector (n-1)
                   return (x:xs)
-    | otherwise = error "impossible"   
+    | otherwise = error "impossible"
 
-instance CArbitrary Char where 
+instance CArbitrary Char where
    arbitrary = do x <- Main.elements [0..255]
                   return (chr x)
 
@@ -794,11 +795,11 @@ instance CArbitrary a => CArbitrary [a] where
 
 genStrings :: IO ()
 genStrings = do xs <- Main.arbitrary
-                putStrLn xs      
+                putStrLn xs
 
 
 
-getN (names,_,_) = names                 
+getN (names,_,_) = names
 getNL = \(name,_,_) -> name
 getNs = map (\(names,_,_) -> names)
 

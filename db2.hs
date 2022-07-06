@@ -93,7 +93,9 @@ taking this course.
 -}
 query2 :: DB -> Int -> [String]
 query2 [] courseId = []
-query2 db courseId = getNames (getCourse courseId db)
+--query2 db courseId = getNames (getCourse courseId db)
+query2 db courseId = map (\(name,_,_) -> name) (filter (\(_,_,courses) -> courseId `elem` courses) db)
+
 
 getNames = map (\(name,_,_) -> name)
 
