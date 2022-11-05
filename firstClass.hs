@@ -31,4 +31,3 @@ plus x y = x + y
 plusUncurry = uncurry plus
 
 dumb = uncurry (curry add)
-
