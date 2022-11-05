@@ -238,7 +238,7 @@ lambdaMap = map (\x -> x `mod` 2 + x ^ 2)
 
 greater x = filter (>x)
 
-boolCheck bool list= filter (==True) list
+boolCheck bool list= filter (== bool) list
 
 boolCheckLambda bool = filter (\x -> x == bool)
 
